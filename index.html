@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Insights Dashboard</title>
+  <link rel="stylesheet" href="https://ui5.sap.com/resources/sap/fiori/themes/sap_horizon/library.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: "72", sans-serif;
+      margin: 2rem;
+    }
+    .tile-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .tile {
+      background-color: var(--sapTile_Background);
+      box-shadow: var(--sapContent_Shadow0);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      flex: 1 1 200px;
+      text-align: center;
+    }
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body class="sapUiBody">
+  <h1>Customer Insights Dashboard</h1>
+  <section class="tile-container">
+    <div class="tile" id="totalCustomers">Loading...</div>
+    <div class="tile" id="avgGreenScore">Loading...</div>
+    <div class="tile" id="mostUsedChannel">Loading...</div>
+    <div class="tile" id="topProgram">Loading...</div>
+  </section>
+
+  <section>
+    <h2>Program Participation</h2>
+    <canvas id="programChart"></canvas>
+  </section>
+
+  <section>
+    <h2>Customer Happiness by Channel</h2>
+    <canvas id="happinessChart"></canvas>
+  </section>
+
+  <script>
+    async function loadCSV(filePath) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(filePath, {
+          download: true,
+          header: true,
+          complete: (results) => resolve(results.data),
+          error: (err) => reject(err)
+        });
+      });
+    }
+
+    async function initDashboard() {
+      const programData = await loadCSV("SAP_Customer_Program_Participation_With_GreenScore.csv");
+      const happinessData = await loadCSV("SAP_Customer_Channel_Happiness.csv");
+
+      // KPIs
+      document.getElementById("totalCustomers").innerText = `Total Customers: ${new Set(programData.map(d => d["Customer ID"]).filter(Boolean)).size}`;
+
+      const greenScores = programData.map(d => parseFloat(d["Green Score"])).filter(n => !isNaN(n));
+      const avgScore = (greenScores.reduce((a, b) => a + b, 0) / greenScores.length).toFixed(2);
+      document.getElementById("avgGreenScore").innerText = `Avg Green Score: ${avgScore}`;
+
+      const channels = happinessData.map(d => d["Channel"]);
+      const topChannel = channels.sort((a,b) => channels.filter(v => v===b).length - channels.filter(v => v===a).length)[0];
+      document.getElementById("mostUsedChannel").innerText = `Top Channel: ${topChannel}`;
+
+      const programKeys = Object.keys(programData[0]).filter(k => !["Customer ID", "Green Score"].includes(k));
+      const programCounts = programKeys.map(k => ({ key: k, count: programData.filter(d => d[k] === "TRUE").length }));
+      const topProgram = programCounts.sort((a, b) => b.count - a.count)[0];
+      document.getElementById("topProgram").innerText = `Top Program: ${topProgram.key}`;
+
+      // Program Participation Chart
+      new Chart(document.getElementById("programChart"), {
+        type: "bar",
+        data: {
+          labels: programCounts.map(p => p.key),
+          datasets: [{
+            label: "Participants",
+            data: programCounts.map(p => p.count),
+            backgroundColor: "#256f3a"
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      // Happiness by Channel Chart
+      const happinessByChannel = {};
+      happinessData.forEach(d => {
+        if (!happinessByChannel[d.Channel]) happinessByChannel[d.Channel] = {};
+        if (!happinessByChannel[d.Channel][d["Happiness Score"]]) happinessByChannel[d.Channel][d["Happiness Score"]] = 0;
+        happinessByChannel[d.Channel][d["Happiness Score"]]++;
+      });
+
+      const labels = Object.keys(happinessByChannel);
+      const scores = ["Very Unhappy", "Unhappy", "Neutral", "Happy", "Very Happy"];
+      const datasets = scores.map(score => ({
+        label: score,
+        data: labels.map(l => happinessByChannel[l][score] || 0),
+        stack: "stack1"
+      }));
+
+      new Chart(document.getElementById("happinessChart"), {
+        type: "bar",
+        data: { labels: labels, datasets: datasets },
+        options: { responsive: true, plugins: { title: { display: true, text: "Happiness Score by Channel" }, tooltip: { mode: 'index', intersect: false }, legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+      });
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>

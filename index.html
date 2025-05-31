@@ -62,8 +62,8 @@
     }
 
     async function initDashboard() {
-      const programData = await loadCSV("SAP_Customer_Program_Participation_With_GreenScore.csv");
-      const happinessData = await loadCSV("SAP_Customer_Channel_Happiness.csv");
+      const programData = await loadCSV("/SAP_Customer_Program_Participation_With_GreenScore.csv");
+      const happinessData = await loadCSV("/SAP_Customer_Channel_Happiness.csv");
 
       // KPIs
       document.getElementById("totalCustomers").innerText = `Total Customers: ${new Set(programData.map(d => d["Customer ID"]).filter(Boolean)).size}`;

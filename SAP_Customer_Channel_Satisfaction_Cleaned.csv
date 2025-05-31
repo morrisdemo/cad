@@ -1,0 +1,19 @@
+Interaction ID,Customer ID,Channel,Satisfaction Level,Agent,Interaction_Count
+INT100001,US00015001,Phone,Satisfied,Ashley,1
+INT100002,US00015001,Email,Very Unsatisfied,Ashley,1
+INT100003,US00015001,SMS,Very Unsatisfied,,1
+INT100004,US00015001,Self-Service,Very Satisfied,,1
+INT100005,US00015001,Case,Satisfied,Kate,1
+INT100006,US00015001,IVR,Satisfied,,1
+INT100007,US00015002,Phone,Unsatisfied,Ashley,1
+INT100008,US00015002,Email,Very Satisfied,Kate,1
+INT100009,US00015002,SMS,Very Satisfied,,1
+INT100010,US00015002,Self-Service,Satisfied,,1
+INT100011,US00015002,Case,Very Satisfied,Kate,1
+INT100012,US00015002,IVR,Very Unsatisfied,,1
+INT100013,US00015003,Phone,Satisfied,Javier,1
+INT100014,US00015003,Email,Satisfied,Javier,1
+INT100015,US00015003,SMS,Very Unsatisfied,,1
+INT100016,US00015003,Self-Service,Unsatisfied,,1
+INT100017,US00015003,Case,No Opinion,Kate,1
+INT100018,US00015003,IVR,Unsatisfied,,1
